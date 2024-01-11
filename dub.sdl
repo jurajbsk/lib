@@ -1,0 +1,12 @@
+name "lib"
+description "A custom std library"
+authors "Juraj B. <jurajbalog805@gmail.com>"
+copyright "Copyright (C) 2024 Juraj B."
+license "proprietary"
+
+buildType "debug" {
+	buildOptions "debugMode" "debugInfo" "betterC"
+}
+buildType "release" {
+	buildOptions "releaseMode" "inline" "optimize" "warningsAsErrors" "betterC"
+}

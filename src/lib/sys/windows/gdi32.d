@@ -1,5 +1,5 @@
-module sys.windows.gdi32;
-import sys.windows.kernel32;
+module lib.sys.windows.gdi32;
+import lib.sys.windows.kernel32;
 
 mixin dynamicLoad!("gdi32.dll", __MODULE__);
 

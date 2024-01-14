@@ -1,5 +1,5 @@
-module sys.windows.user32;
-import sys.windows.kernel32;
+module lib.sys.windows.user32;
+import lib.sys.windows.kernel32;
 
 mixin dynamicLoad!("user32.dll", __MODULE__);
 

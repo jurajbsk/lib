@@ -1,4 +1,4 @@
-module math;
+module lib.math;
 
 T max(T)(T num1, T num2)
 {

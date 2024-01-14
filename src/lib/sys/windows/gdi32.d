@@ -31,7 +31,7 @@ struct BITMAPINFOHEADER {
 	int height;
 	ushort planes = 1;
 	ushort bitCount;
-	clrCompress compression;
+	uint compression;
 	uint imageSize;
 	int XPixelperMeter;
 	int YPixelperMeter;
@@ -42,7 +42,7 @@ struct BITMAPINFO {
 	BITMAPINFOHEADER header;
 	RGBQUAD[1] colours;
 }
-enum clrCompress {
+enum : uint {
 	BI_RGB = 0,
 	BI_RLE8,
 	BI_RLE4,
@@ -50,7 +50,7 @@ enum clrCompress {
 	BI_JPEG,
 	BI_PNG
 }
-enum rasterOp : uint {
+enum : uint {
 	BLACKNESS = 0x000042,
 	NOTSRCERASE = 0x1100A6,
 	NOTSRCCOPY = 0x330008,

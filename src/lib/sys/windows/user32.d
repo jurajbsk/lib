@@ -6,7 +6,7 @@ mixin dynamicLoad!("user32.dll", __MODULE__);
 extern(Windows) nothrow __gshared:
 
 ushort function(const WindowClassEx* windClass) RegisterClassExA;
-enum CWStyle:uint {
+enum : uint {
 	OVERLAPPED = 0x0,
 	MAXIMIZEBOX = 0x10000,
 	MINIMIZEBOX = 0x20000,
@@ -17,10 +17,10 @@ enum CWStyle:uint {
 	OVERLAPPEDWINDOW = OVERLAPPED | MAXIMIZEBOX | MINIMIZEBOX | THICKFRAME | SYSMENU | CAPTION,
 	POPUP = 0x80000000
 }
-enum ExCWStyle:uint {
+enum : uint {
 	WINDOWEDGE = 0x00000100L
 }
-void* function(ExCWStyle exStyle, const char* className, const char* windowName, CWStyle style, int x, int y,
+void* function(uint exStyle, const char* className, const char* windowName, uint style, int x, int y,
                int width, int height, void* parent, void* menu, const void* instance, void* createParam) CreateWindowExA;
 void* function(void* winHndl) GetDC;
 int function(void* winHndl, void* dcHndl) ReleaseDC;
@@ -85,7 +85,7 @@ struct WindowClassEx {
 	const char* className;
 	void* smallIcon;
 }
-enum WCStyle {
+enum : uint {
 	VREDRAW = 0x0001,
 	HREDRAW = 0x0002,
 	OWNDC = 0x0020

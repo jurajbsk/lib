@@ -10,7 +10,7 @@ nothrow:
 @allocSize(0) void* malloc(size_t size) @trusted
 {
 	version(Windows) {
-		void* ptr = VirtualAlloc(null, size, PageAllocFlag.COMMIT, PageProtecFlag.READWRITE);
+		void* ptr = VirtualAlloc(null, size, COMMIT, READWRITE);
 	}
 	return ptr;
 }
@@ -83,12 +83,12 @@ void free(void* block) @trusted
 
 nothrow __gshared:
 version(Windows) extern(Windows) {
-	void* VirtualAlloc(void* startAddress=null, size_t size, PageAllocFlag allocFlag, PageProtecFlag protectFlag);
-	enum PageAllocFlag : uint {
+	void* VirtualAlloc(void* startAddress=null, size_t size, uint allocFlag, uint protectFlag);
+	enum : uint {
 		COMMIT = 0x1000,
 		RESERVE = 0x2000
 	}
-	enum PageProtecFlag : uint {
+	enum : uint {
 		NOACCESS = 0x1,
 		READONLY = 0x2,
 		READWRITE = 0x4

@@ -1,4 +1,4 @@
-module sys.windows.kernel32;
+module lib.sys.windows.kernel32;
 
 mixin template dynamicLoad(string fileName, string moduleName)
 {

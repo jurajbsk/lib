@@ -1,4 +1,4 @@
-module sys.winmain;
+module lib.sys.winmain;
 
 mixin template WinMain() {
 	pragma(linkerDirective, "/subsystem:windows");

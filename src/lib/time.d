@@ -1,5 +1,5 @@
-module time;
-version(Windows) import sys.windows.kernel32;
+module lib.time;
+version(Windows) import lib.sys.windows.kernel32;
 
 long freq()
 {

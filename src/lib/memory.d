@@ -1,4 +1,4 @@
-module memory;
+module lib.memory;
 version(LDC) import ldc.attributes;
 else {
 	struct allocSize {long sizeArgIdx; long numArgIdx;}

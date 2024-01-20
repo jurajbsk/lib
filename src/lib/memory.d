@@ -6,25 +6,23 @@ else {
 
 nothrow:
 
-/// Allocates memory on the heap
-@allocSize(0) void* malloc(size_t size) @trusted
+@allocSize(0) void* _malloc(size_t size) @trusted
 {
 	version(Windows) {
 		void* ptr = VirtualAlloc(null, size, COMMIT, READWRITE);
 	}
 	return ptr;
 }
-/// Allocates memory on the heap
+/// Returns allocated memory, minimum size specified by the argument
 T* malloc(T)() @trusted
 {
-	return cast(T*) malloc(T.sizeof);
+	return cast(T*) _malloc(T.sizeof);
 }
-/// Allocates memory on the heap
 T[] malloc(T)(size_t size) @trusted
 {
 	//static if(is(T : immutable dchar)) size++;
 
-	T* ptr = cast(T*) malloc(size * T.sizeof);
+	T* ptr = cast(T*) _malloc(size * T.sizeof);
 	return ptr[0..size];
 }
 /// Frees allocated memory
@@ -39,6 +37,7 @@ void free(void* block) @trusted
 	}
 }
 
+/// A unique pointer for automatic heap memory management
 @safe pure struct uniqptr(T0) {
 	enum bool isArray = is(T0:U[], U);
 	static if(isArray) {

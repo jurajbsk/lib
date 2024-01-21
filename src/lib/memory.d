@@ -14,10 +14,6 @@ nothrow:
 	return ptr;
 }
 /// Returns allocated memory, minimum size specified by the argument
-T* malloc(T)() @trusted
-{
-	return cast(T*) _malloc(T.sizeof);
-}
 T[] malloc(T)(size_t size) @trusted
 {
 	//static if(is(T : immutable dchar)) size++;

@@ -4,7 +4,7 @@ else {
 	struct allocSize {long sizeArgIdx; long numArgIdx;}
 }
 
-nothrow:
+nothrow @safe:
 
 @allocSize(0) void* _malloc(size_t size) @trusted
 {
@@ -14,7 +14,7 @@ nothrow:
 	return ptr;
 }
 /// Returns allocated memory, minimum size specified by the argument
-T[] malloc(T)(size_t size) @trusted
+T[] malloc(T)(size_t size)
 {
 	//static if(is(T : immutable dchar)) size++;
 

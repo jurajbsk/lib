@@ -32,6 +32,14 @@ void free(void* block) @trusted
 		bool errCode = VirtualFree(block, 0, RELEASE);
 	}
 }
+version(LDC) pragma(LDC_alloca) void* _alloca(size_t size) @trusted pure;
+else alias _alloca = _malloc;
+/// Allocates memory on the stack, freed when function
+T[] alloca(T)(size_t size)
+{
+	T* ptr = cast(T*) _alloca(size * T.sizeof);
+	return ptr[0..size];
+}
 
 /// A unique pointer for automatic heap memory management
 @safe pure struct uniqptr(T0) {

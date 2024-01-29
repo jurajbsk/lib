@@ -41,32 +41,23 @@ T[] alloca(T)(size_t size)
 	return ptr[0..size];
 }
 
-/// A unique pointer for automatic heap memory management
-@safe pure struct uniqptr(T0) {
-	enum bool isArray = is(T0:U[], U);
-	static if(isArray) {
-		alias T = T0;
-	}
-	else {
-		alias T = T0*;
-	}
-
-	T trunk;
-	alias trunk this;
+/// A unique pointer (array!!!) for automatic heap memory management
+@safe pure struct uniqptr(T) {
+	T[] base;
+	alias base this;
 
 	void freePtr()
 	{
-		static if(isArray) auto ptr = &trunk[0];
-		else auto ptr = trunk;
+		T* ptr = &base[0];
 		
 		if(ptr) {
 			free(ptr);
 		}
 	}
 	void assignPtr(R)(R value)
+	if(!is(R : uniqptr))
 	{
-		static assert(!is(R : uniqptr));
-		trunk = cast(T) value;
+		base = cast(T[]) value;
 	}
 
 	this(R)(R value)

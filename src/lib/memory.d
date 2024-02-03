@@ -28,6 +28,7 @@ size_t roundToPage(size_t size)
 	return ptr;
 }
 /// Returns allocated memory, minimum size specified by the argument
+T[] malloc(T)(size_t size = 1) @trusted
 {
 	//static if(is(T : immutable dchar)) size++;
 
@@ -68,10 +69,13 @@ void free(void* block) @trusted
 }
 version(LDC) pragma(LDC_alloca) void* _alloca(size_t size) @trusted pure;
 /// Allocates memory on the stack, freed when function
+T[] alloca(T)(size_t size) @trusted
 {
+	version(LDC) {
 	T* ptr = cast(T*) _alloca(size * T.sizeof);
 	return ptr[0..size];
 	}
+	else static assert(0, "Sorry bud, you'll need LDC2 to use alloca()");
 }
 
 nothrow __gshared:
@@ -96,5 +100,17 @@ else version(Posix) extern(C)
 
 unittest
 {
+	int[] foo = malloc!int(3);
+	assert(foo.length == 3);
+	foo = realloc(foo, 1);
+	assert(foo.length == 1);
 
+	long[] bar = malloc!long(getPageSize*2);
+	long* barptr = &bar[0];
+	bar = realloc(bar, getPageSize+1);
+	assert(&bar[0] == barptr);
+
+	bar = realloc(bar, getPageSize*3);
+	bar[$-1] = 5;
+	assert(bar[getPageSize*3-1] == 5);
 }

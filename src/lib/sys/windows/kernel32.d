@@ -19,7 +19,7 @@ mixin template dynamicLoad(string fileName, string moduleName)
 	}
 }
 
-extern(Windows) nothrow:
+extern(Windows) nothrow @safe:
 void* GetModuleHandleA(const char* moduleName = null);
 void* LoadLibraryA(const char* libFileName);
 alias winFuncter = extern(Windows) long function() nothrow;
@@ -27,5 +27,24 @@ winFuncter GetProcAddress(void* dll, const char* funcName);
 bool QueryPerformanceCounter(out ulong perfCount);
 bool QueryPerformanceFrequency(out ulong perfFreq);
 void Sleep(uint ms);
+pure void GetSystemInfo(out SYSTEM_INFO sysInfo);
+struct SYSTEM_INFO {
+	union {
+		uint dwOemId;
+		struct {
+			ushort cpuArchitecture;
+			ushort _reserved;
+		}
+	}
+	uint pageSize;
+	void* minAppAddr;
+	void* maxAppAdrr;
+	uint* activeCpuMask;
+	uint cpuCount;
+	uint cpuType;
+	uint allocGranularity;
+	ushort cpuLevel;
+	ushort cpuRevision;
+}
 
 //alias windowsFunction = extern(Windows) nothrow __gshared;

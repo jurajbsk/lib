@@ -4,7 +4,21 @@ else {
 	struct allocSize {long sizeArgIdx; long numArgIdx;}
 }
 
-nothrow @safe:
+@safe nothrow pure:
+uint getPageSize()
+{
+	version(Windows) {
+		import lib.sys.windows.kernel32;
+		SYSTEM_INFO si;
+		GetSystemInfo(si);
+		uint res = si.pageSize;
+	}
+	return res;
+}
+size_t roundToPage(size_t size)
+{
+	return (size + getPageSize-1)/getPageSize;
+}
 
 @allocSize(0) void* _malloc(size_t size) @trusted
 {
@@ -14,7 +28,6 @@ nothrow @safe:
 	return ptr;
 }
 /// Returns allocated memory, minimum size specified by the argument
-T[] malloc(T)(size_t size)
 {
 	//static if(is(T : immutable dchar)) size++;
 
@@ -33,45 +46,10 @@ void free(void* block) @trusted
 	}
 }
 version(LDC) pragma(LDC_alloca) void* _alloca(size_t size) @trusted pure;
-else alias _alloca = _malloc;
 /// Allocates memory on the stack, freed when function
-T[] alloca(T)(size_t size)
 {
 	T* ptr = cast(T*) _alloca(size * T.sizeof);
 	return ptr[0..size];
-}
-
-/// A unique pointer (array!!!) for automatic heap memory management
-@safe pure struct uniqptr(T) {
-	T[] base;
-	alias base this;
-
-	void freePtr()
-	{
-		T* ptr = &base[0];
-		
-		if(ptr) {
-			free(ptr);
-		}
-	}
-	void assignPtr(R)(R value)
-	if(!is(R : uniqptr))
-	{
-		base = cast(T[]) value;
-	}
-
-	this(R)(R value)
-	{
-		assignPtr(value);
-	}
-	~this()
-    {
-		freePtr();
-	}
-	void opAssign(T value)
-    {
-		freePtr();
-		assignPtr(value);
 	}
 }
 
@@ -97,14 +75,5 @@ else version(Posix) extern(C)
 
 unittest
 {
-	uniqptr!(int[]) foo = malloc!int(5);
-	foo[] = 2;
-	int[5] test = [2,2,2,2,2];
-	assert(foo == test);
-	free(foo.ptr);
 
-	uniqptr!long bar = malloc!long;
-	*bar = 5;
-	assert(*bar == 5);
-	free(bar);
 }

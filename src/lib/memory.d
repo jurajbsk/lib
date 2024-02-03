@@ -34,6 +34,27 @@ size_t roundToPage(size_t size)
 	T* ptr = cast(T*) _malloc(size * T.sizeof);
 	return ptr[0..size];
 }
+
+@allocSize(1) void* _realloc(void* ptr, size_t size, size_t cursize) @trusted
+{
+	void* olddata = _alloca(cursize);
+	olddata[0..cursize] = ptr[0..cursize];
+	free(ptr);
+
+	void* newptr = _malloc(size);
+	if(olddata && olddata != newptr) {
+		newptr[0..cursize] = olddata[0..cursize];
+	}
+	return newptr;
+}
+/// Reallocates memory
+T[] realloc(T)(T[] block, size_t size) @trusted
+{
+	if(block.length >= size) return block[0..size];
+	
+	T* ptr = cast(T*) _realloc(block.ptr, roundToPage(size*T.sizeof), roundToPage(block.length*T.sizeof));
+	return ptr[0..size];
+}
 /// Frees allocated memory
 void free(void* block) @trusted
 {

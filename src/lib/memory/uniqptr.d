@@ -1,5 +1,5 @@
 module lib.memory.uniqptr;
-import lib.memory;
+import lib.memory.alloc;
 
 @safe nothrow pure:
 /// A unique pointer (array!!!) for automatic heap memory management

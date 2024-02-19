@@ -15,9 +15,23 @@ uint getPageSize()
 	}
 	return res;
 }
-size_t roundToPage(size_t size)
+size_t roundUpToPage(size_t size)
 {
 	return size + getPageSize - (size % getPageSize);
+}
+size_t roundDownToPage(size_t size)
+{
+	return size - (size % getPageSize);
+}
+uint getAllocGranularity()
+{
+	version(Windows) {
+		import lib.sys.windows.kernel32;
+		SYSTEM_INFO si;
+		GetSystemInfo(si);
+		uint res = si.allocGranularity;
+	}
+	return res;
 }
 
 @allocSize(0) void* _malloc(size_t size) @trusted
@@ -51,7 +65,7 @@ T[] malloc(T)(size_t size = 1) @trusted
 /// Reallocates memory
 T[] realloc(T)(T[] block, size_t size) @trusted
 {
-	if(roundToPage(block.length * T.sizeof) >= size * T.sizeof) {
+	if(roundDownToPage(block.length * T.sizeof) >= size * T.sizeof) {
 		return block[0..size];
 	}
 	

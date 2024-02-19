@@ -17,7 +17,7 @@ struct List(T, float growfactor = 2) {
 	{
 		size *= T.sizeof;
 		if(!array.ptr) {
-			size_t growsize = roundToPage(size);
+			size_t growsize = roundUpToPage(size);
 			array = cast(T[]) _malloc(growsize)[0..size];
 			_capacity = growsize;
 		}

@@ -41,6 +41,13 @@ uint getAllocGranularity()
 	}
 	return ptr;
 }
+@allocSize(0) void* _malloc(size_t size, void* startAddress) @trusted
+{
+	version(Windows) {
+		void* ptr = VirtualAlloc(startAddress, size, RESERVE||COMMIT, READWRITE);
+	}
+	return ptr;
+}
 /// Returns allocated memory, minimum size specified by the argument
 T[] malloc(T)(size_t size = 1) @trusted
 {
@@ -52,6 +59,11 @@ T[] malloc(T)(size_t size = 1) @trusted
 
 @allocSize(1) void* _realloc(void* ptr, size_t size, size_t cursize) @trusted
 {
+	void* oldptr = _malloc(size, ptr);
+	if(oldptr) {
+		return oldptr;
+	}
+
 	ubyte* newptr = cast(ubyte*) _malloc(size);
 
 	size_t min = (size > cursize)? cursize : size;

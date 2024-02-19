@@ -38,10 +38,12 @@ T[] malloc(T)(size_t size = 1) @trusted
 
 @allocSize(1) void* _realloc(void* ptr, size_t size, size_t cursize) @trusted
 {
-	void* newptr = _malloc(size);
+	ubyte* newptr = cast(ubyte*) _malloc(size);
 
 	size_t min = (size > cursize)? cursize : size;
-	newptr[0..min] = ptr[0..min];
+	foreach(i; 0..min) {
+		newptr[i] = (cast(ubyte*)ptr)[i];
+	}
 
 	free(ptr);
 	return newptr;

@@ -1,15 +1,17 @@
 module lib.time;
-version(Windows) import lib.sys.windows.kernel32;
+version(Windows) {
+	import lib.sys.windows.kernel32;
+}
 
-long freq()
+ulong freq()
 {
-	static ulong freq;
+	ulong freq;
 	version(Windows) {
-		if(!freq) QueryPerformanceFrequency(freq);
+		QueryPerformanceFrequency(freq);
 	}
 	return freq;
 }
-long ticks()
+ulong ticks()
 {
 	ulong ticks;
 	version(Windows) {
@@ -17,6 +19,7 @@ long ticks()
 	}
 	return ticks;
 }
+
 void sleep(uint time)
 {
 	version(Windows) {

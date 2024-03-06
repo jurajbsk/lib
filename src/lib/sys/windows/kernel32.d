@@ -25,7 +25,7 @@ void* LoadLibraryA(const char* libFileName);
 alias winFuncter = extern(Windows) long function() nothrow;
 winFuncter GetProcAddress(void* dll, const char* funcName);
 bool QueryPerformanceCounter(out ulong perfCount);
-bool QueryPerformanceFrequency(out ulong perfFreq);
+pure bool QueryPerformanceFrequency(out ulong perfFreq);
 void Sleep(uint ms);
 pure void GetSystemInfo(out SYSTEM_INFO sysInfo);
 struct SYSTEM_INFO {

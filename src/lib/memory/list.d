@@ -15,25 +15,36 @@ struct List(T, float growfactor = 2) {
 	}
 	void reserve(size_t size) @trusted
 	{
-		size *= T.sizeof;
+		size_t bytesize = size * T.sizeof;
+
+		if(__ctfe) {
+			array.length += size;
+			_capacity += bytesize;
+			return;
+		}
+
 		if(!array.ptr) {
-			size_t growsize = roundUpToPage(size);
-			array = cast(T[]) _malloc(growsize)[0..size];
+			size_t growsize = roundUpToPage(bytesize);
+			array = cast(T[]) _malloc(growsize)[0..bytesize];
 			_capacity = growsize;
 		}
 		else {
-			size_t growsize = {
-				size_t res = _capacity;
-				while(res < size) {
-					res = cast(size_t)(res*growfactor);
-				} return res;
-			}();
-			array = cast(T[]) _realloc(array.ptr, growsize, _capacity)[0..array.length+size];
+			size_t growsize = _capacity;
+			while(growsize < bytesize) {
+				growsize = cast(size_t)(growsize*growfactor);
+			}
+			array = cast(T[]) _realloc(array.ptr, growsize, _capacity)[0..array.length + bytesize];
 			_capacity += growsize;
 		}
 	}
 	void add(T element) @trusted
 	{
+		if(__ctfe) {
+			array ~= element;
+			_capacity += T.sizeof;
+			return;
+		}
+
 		if((array.length+1)*T.sizeof > _capacity) {
 			reserve(1);
 		}
@@ -43,8 +54,14 @@ struct List(T, float growfactor = 2) {
 	}
 	void clear() @trusted
 	{
-		if(!array.ptr) return;
+		if(!array.ptr) {
+			return;
+		}
 		_capacity = 0;
+		if(__ctfe) {
+			array.length = 0;
+			return;
+		}
 		free(array.ptr);
 	}
 

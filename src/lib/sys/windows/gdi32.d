@@ -3,7 +3,8 @@ import lib.sys.windows.kernel32;
 
 mixin dynamicLoad!("gdi32.dll", __MODULE__);
 
-extern(Windows) nothrow __gshared:
+extern(Windows) @safe nothrow:
+
 bool function(void* objectHndl) DeleteObject;
 void* function(const void* hndl) CreateCompatibleDC;
 BITMAP* function(const void* handle, const BITMAPINFO* bmiPtr, uint usage, void** sectionHndl, void* hSection=null, uint offset=0) CreateDIBSection;

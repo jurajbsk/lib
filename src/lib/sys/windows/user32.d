@@ -3,9 +3,9 @@ import lib.sys.windows.kernel32;
 
 mixin dynamicLoad!("user32.dll", __MODULE__);
 
-extern(Windows) nothrow __gshared:
+extern(Windows) @safe nothrow:
 
-ushort function(const WindowClassEx* windClass) RegisterClassExA;
+ushort function(const ref WindowClassEx windClass) RegisterClassExA;
 enum : uint {
 	OVERLAPPED = 0x0,
 	MAXIMIZEBOX = 0x10000,
@@ -31,8 +31,8 @@ bool function(Message* msg) TranslateMessage;
 bool function(Message* msg) DispatchMessageA;
 long function(void* handle, uint message, ulong wParameter, long lParameter) DefWindowProcA;
 bool function(void* handle, out RECT rect) GetClientRect;
-void* function(void* handle, const PAINTSTRUCT*) BeginPaint;
-bool function(void* handle, const PAINTSTRUCT*) EndPaint;
+void* function(void* handle, const ref PAINTSTRUCT) BeginPaint;
+bool function(void* handle, const ref PAINTSTRUCT) EndPaint;
 void* function(void* cursorHndl) SetCursor;
 
 enum int USEDEFAULT = 0x80000000;

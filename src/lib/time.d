@@ -1,4 +1,6 @@
 module lib.time;
+@safe nothrow:
+
 version(Windows) {
 	import lib.sys.windows.kernel32;
 }

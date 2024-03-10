@@ -62,15 +62,10 @@ struct List(T, float growfactor = 2) {
 			array.length = 0;
 			return;
 		}
-		free(array.ptr);
-	}
 
-	this(size_t size)
-	{
-		reserve(size);
+		free(array.ptr);
+		array = null;
 	}
-	typeof(this) opBinary(string op:"~")(T rhs) => add(rhs);
-	~this() => clear();
 }
 
 unittest

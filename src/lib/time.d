@@ -5,7 +5,7 @@ version(Windows) {
 	import lib.sys.windows.kernel32;
 }
 
-ulong freq()
+ulong getFreq()
 {
 	ulong freq;
 	version(Windows) {
@@ -13,7 +13,7 @@ ulong freq()
 	}
 	return freq;
 }
-ulong ticks()
+ulong getTicks()
 {
 	ulong ticks;
 	version(Windows) {

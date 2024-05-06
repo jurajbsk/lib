@@ -46,5 +46,19 @@ struct SYSTEM_INFO {
 	ushort cpuLevel;
 	ushort cpuRevision;
 }
-
-//alias windowsFunction = extern(Windows) nothrow __gshared;
+bool WriteFile(void* fileHndl, const char* msg, uint toWrite, uint* written, OVERLAPPED* overlapped = null);
+struct OVERLAPPED {
+	ulong* internal;
+	ulong* internalHigh;
+	union {
+		struct {
+			uint offset;
+			uint offsetHigh;
+		}
+		void* pointer;
+	}
+	void* eventHndl;
+}
+void* GetStdHandle(uint stdHndlNum);
+bool WriteConsoleA(void* consoleOutput, const char* msg, uint length, uint* written, void* reserved);
+bool WriteConsoleW(void* consoleOutput, const wchar* msg, uint length, uint* written, void* reserved);

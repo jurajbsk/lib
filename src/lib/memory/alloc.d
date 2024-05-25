@@ -4,7 +4,6 @@ else {
 	struct allocSize {long sizeArgIdx; long numArgIdx;}
 }
 
-@safe nothrow pure{
 uint getPageSize()
 {
 	version(Windows) {
@@ -34,22 +33,15 @@ uint getAllocGranularity()
 	return res;
 }
 
-@allocSize(0) void* _malloc(size_t size) @trusted
+@allocSize(0) void* _malloc(size_t size, void* startPtr=null)
 {
 	version(Windows) {
-		void* ptr = VirtualAlloc(null, size, COMMIT, READWRITE);
-	}
-	return ptr;
-}
-@allocSize(0) void* _malloc(size_t size, void* startAddress) @trusted
-{
-	version(Windows) {
-		void* ptr = VirtualAlloc(startAddress, size, RESERVE||COMMIT, READWRITE);
+		void* ptr = VirtualAlloc(startPtr, size, RESERVE|COMMIT, READWRITE);
 	}
 	return ptr;
 }
 /// Returns allocated memory, minimum size specified by the argument
-T[] malloc(T)(size_t size = 1) @trusted
+T[] malloc(T)(size_t size = 1)
 {
 	//static if(is(T : immutable dchar)) size++;
 
@@ -57,7 +49,7 @@ T[] malloc(T)(size_t size = 1) @trusted
 	return ptr[0..size];
 }
 
-@allocSize(1) void* _realloc(void* ptr, size_t size, size_t cursize) @trusted
+@allocSize(1) void* _realloc(void* ptr, size_t size, size_t cursize)
 {
 	void* oldptr = _malloc(size, ptr);
 	if(oldptr) {
@@ -70,12 +62,12 @@ T[] malloc(T)(size_t size = 1) @trusted
 	foreach(i; 0..min) {
 		newptr[i] = (cast(ubyte*)ptr)[i];
 	}
-
 	free(ptr);
+	
 	return newptr;
 }
 /// Reallocates memory
-T[] realloc(T)(T[] block, size_t size) @trusted
+T[] realloc(T)(T[] block, size_t size)
 {
 	if(roundDownToPage(block.length * T.sizeof) >= size * T.sizeof) {
 		return block[0..size];
@@ -85,7 +77,7 @@ T[] realloc(T)(T[] block, size_t size) @trusted
 	return ptr[0..size];
 }
 /// Frees allocated memory
-void free(void* block) @trusted
+void free(void* block)
 {
 	version(Windows) {
 		enum : uint {
@@ -95,9 +87,9 @@ void free(void* block) @trusted
 		bool errCode = VirtualFree(block, 0, RELEASE);
 	}
 }
-version(LDC) pragma(LDC_alloca) void* _alloca(size_t size) @trusted pure;
+version(LDC) pragma(LDC_alloca) void* _alloca(size_t size) pure;
 /// Allocates memory on the stack, freed when function
-T[] alloca(T)(size_t size) @trusted
+T[] alloca(T)(size_t size)
 {
 	version(LDC) {
 	T* ptr = cast(T*) _alloca(size * T.sizeof);
@@ -106,7 +98,6 @@ T[] alloca(T)(size_t size) @trusted
 	else static assert(0, "Sorry bud, you'll need LDC2 to use alloca()");
 }
 
-nothrow __gshared:
 version(Windows) extern(Windows) {
 	void* VirtualAlloc(void* startAddress=null, size_t size, uint allocFlag, uint protectFlag);
 	enum : uint {
@@ -119,28 +110,53 @@ version(Windows) extern(Windows) {
 		READWRITE = 0x4
 	}
 	bool VirtualFree(const void* address, size_t size = 0, uint flags);
+	struct SEC_ATTRS {
+		uint length;
+		void* secDesc;
+		bool inherit;
+	}
+	void* CreateFileMappingA(void* fileHndl, SEC_ATTRS* secAttrs, uint flags, uint maxSizeHigh, uint maxSizeLow, char* name=null);
+	void* MapViewOfFile(void* fileHndl, uint flags, uint fileOffsetHigh=0, uint fileOffsetLow=0, size_t sizeToMap=0);
+	bool UnmapViewOfFile(void* basePtr);
+	struct MEMORY_BASIC_INFO {
+		void* basePtr;
+		void* basePage;
+		uint allocProtect;
+		ushort partitionId;
+		size_t regionSize;
+		uint state;
+		uint protect;
+		uint type;
+	}
+	size_t VirtualQuery(void* basePtr, out MEMORY_BASIC_INFO infoBuff, size_t buffSize=MEMORY_BASIC_INFO.sizeof);
 }
 else version(Posix) extern(C)
 {
-	void* mmap64(void*, size_t, int, int, int, long);
-	void* mmap(void*, size_t, int, int, int, long);
-}
+	// TODO: linux branch
+	//void* mmap64(void*, size_t, int, int, int, long);
+	//void* mmap(void*, size_t, int, int, int, long);
 }
 
 unittest
 {
+	// array
 	int[] foo = malloc!int(3);
 	assert(foo.length == 3);
 	foo = realloc(foo, 1);
 	assert(foo.length == 1);
 
-	byte[] bar = malloc!byte(getPageSize);
-	void* barptr = &bar[0];
-
+	// "large" allocs
+	byte[] bar = malloc!byte(2*getPageSize);
+	// in-place realloc
+	void* oldptr = bar.ptr;
 	bar = realloc(bar, bar.length-5);
-	assert(&bar[0] == barptr); //check smaller sizes realloc'ed in-place
-	import std;
-	bar = realloc(bar, getPageSize*3);
-	bar[$-1] = 5;
-	assert(bar[getPageSize*3-1] == 5);
+	assert(bar.ptr == oldptr);
+	// out-of-place realloc
+	bar[5] = 5;
+	bar = realloc(bar, bar.length*3);
+	assert(bar[5] == 5);
+
+	// free
+	free(foo.ptr);
+	free(bar.ptr);
 }

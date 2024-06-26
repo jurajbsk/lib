@@ -1,20 +1,18 @@
 module lib.io;
 
-enum File : void* {
-	init = null
-}
+alias File = void;
 
-File getStdHndl(uint stdnum) {
+File* getStdHndl(uint stdnum) {
 	version(Windows) {
 		import lib.sys.windows.kernel32;
-		File file = cast(File) GetStdHandle(uint.max - (10+stdnum));
+		File* file = GetStdHandle(uint.max - (10+stdnum));
 	}
 	return file;
 }
 
 struct _0Std(uint stdnum) {
-	File _stdHandle;
-	File stdHandle() {
+	File* _stdHandle;
+	File* stdHandle() {
 		if(!_stdHandle) {
 			_stdHandle = getStdHndl(stdnum);
 		}
@@ -23,15 +21,15 @@ struct _0Std(uint stdnum) {
 	alias stdHandle this;
 }
 
-File stdin() {
+File* stdin() {
 	static _0Std!0 file;
 	return file;
 }
-File stdout() {
+File* stdout() {
 	static _0Std!1 file;
 	return file;
 }
-File stderr() {
+File* stderr() {
 	static _0Std!2 file;
 	return file;
 }

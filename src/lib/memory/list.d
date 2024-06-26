@@ -1,7 +1,6 @@
 module lib.memory.list;
 import lib.memory.alloc;
 
-@safe nothrow pure:
 /// Dynamically-sized list, capacity aligned with pages
 struct List(T, float growfactor = 2) {
 	T[] array;
@@ -37,12 +36,12 @@ struct List(T, float growfactor = 2) {
 			_capacity += growsize;
 		}
 	}
-	void add(T element) @trusted
+	T* add(T element = T()) @trusted
 	{
 		if(__ctfe) {
 			array ~= element;
 			_capacity += T.sizeof;
-			return;
+			return &array[$-1];
 		}
 
 		if((array.length+1)*T.sizeof > _capacity) {
@@ -51,6 +50,7 @@ struct List(T, float growfactor = 2) {
 		else array = array.ptr[0..array.length+1];
 
 		array[$-1] = element;
+		return &array[$-1];
 	}
 	void clear() @trusted
 	{

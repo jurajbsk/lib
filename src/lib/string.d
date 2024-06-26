@@ -4,10 +4,13 @@ import lib.err;
 // Needs to be a constant-sized array, size changes based on T
 string toString(T)(T arg, char[] buffer)
 {
-	static if(is(immutable(T) : string) || is(immutable(T) : wstring)) {
-		return arg;
+	static if(is(T == bool)) {
+		char[][2] boolTable = cast(char[][])["false", "true"];
+		buffer = boolTable[arg];
 	}
-	
+	else static if(is(immutable(T) : string) || is(immutable(T) : wstring)) {
+		buffer = cast(char[])arg;
+	}
 	else static if(is(T : long)) {
 		// max size: ~31
 		bool start;
@@ -26,7 +29,6 @@ string toString(T)(T arg, char[] buffer)
 			buffer[i] = arg%10 + '0';
 			arg /= 10;
 		}
-		return cast(string)buffer;
 	}
 	else static if(is(T == enum)) {
 		enum string[] _enumTable = [__traits(allMembers, T)];
@@ -35,12 +37,14 @@ string toString(T)(T arg, char[] buffer)
 			return enumTable[arg];
 		}
 		else {
-			return cast(long)arg;
+			return toString(cast(long)arg, buffer);
 		}
 	}
 	else {
 		static assert(0, typeImplErr!(__FUNCTION__, T));
 	}
+
+	return cast(string)buffer;
 }
 
 string parseCStr(char* cstr)

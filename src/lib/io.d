@@ -33,14 +33,14 @@ File* stderr() {
 	static _0Std!2 file;
 	return file;
 }
-void writeA(File file, string msg)
+void writeA(File* file, string msg)
 {
 	version(Windows) {
 		import lib.sys.windows.kernel32;
 		WriteFile(file, msg.ptr, cast(uint)msg.length, null);
 	}
 }
-void writeW(File file, wstring msg)
+void writeW(File* file, wstring msg)
 {
 	version(Windows) {
 		import lib.sys.windows.kernel32;
@@ -49,37 +49,51 @@ void writeW(File file, wstring msg)
 }
 
 import lib.string;
-void fwrite(S...)(File outFile, S args)
+void fwrite(S...)(File* outFile, S args)
 {
 	void writeOut(string msg) => writeA(outFile, msg);
 
 	static foreach(arg; args) {{
 		alias argType = typeof(arg);
 		static if(is(typeof(arg) == U*, U)) {
-			if(arg) {
-			fwrite(outFile, *arg);
+			static if(is(U == void)) {
+				fwrite(outFile, cast(size_t)arg);
 			}
-			else writeOut("null");
+			else
+			{
+				if(arg) {
+					fwrite(outFile, *arg);
+				}
+				else writeOut("null");
+			}
 		}
 		else static if(is(immutable(argType) : wstring)) {
 			writeW(stdout, arg);
 		}
-		else static if(is(immutable(argType) : immutable(char))) {
+		else static if(is(immutable(argType) : immutable(char)) && !is(argType == bool)) {
 			writeOut(cast(string)(&arg)[0..1]);
 		}
-		else static if(is(argType == struct)) {
+		else static if(is(argType == struct) ||
+		               is(argType == union))
+		{
 			string header = __traits(identifier, argType) ~ "(";
 			writeOut(header);
 			enum string[] members = [__traits(allMembers, argType)];
-			static foreach(i, membStr; members) {{
+			static foreach(i, membStr; members)
+			{{
 				auto member = __traits(getMember, arg, membStr);
 				if(is(typeof(member) == return) || is(typeof(member) == typeof(arg))) {
 					// member is func or __ctor!
 				}
 				else {
-					fwrite(outFile, member);
-					if(i+1 < members.length-1) {
+					if(i > 0) {
 						writeOut(", ");
+					}
+					if(is(typeof(member) : U[], U : wchar)) {
+						fwrite(outFile, '"', member, '"');
+					}
+					else {
+						fwrite(outFile, member);
 					}
 				}
 			}}
@@ -97,5 +111,11 @@ void writeln(S...)(S args) => write(args, '\n');
 
 unittest
 {
-	writeln("「ただいま印刷中」! 😃 "w, 51_235);
+	struct Test {
+		bool a=true;
+		Test* t;
+		string s="test";
+	}
+	Test test;
+	writeln(test, " 「ただいま印刷中」! 😃 "w, 51_235);
 }

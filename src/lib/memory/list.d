@@ -6,37 +6,45 @@ struct List(T, float growfactor = 2) {
 	T[] array;
 	alias array this;
 	size_t _capacity;
+
 	size_t capacity() => _capacity/T.sizeof;
+	size_t bytesize(size_t size) => size * T.sizeof;
 
-	void reserveExactly(size_t size)
+	void reserveExact(size_t size)
 	{
-
-	}
-	void reserve(size_t size) @trusted
-	{
-		size_t bytesize = size * T.sizeof;
-
 		if(__ctfe) {
 			array.length += size;
-			_capacity += bytesize;
+			_capacity += bytesize(size);
 			return;
 		}
 
 		if(!array.ptr) {
-			size_t growsize = roundUpToPage(bytesize);
-			array = cast(T[]) _malloc(growsize)[0..bytesize];
+			size_t growsize = roundUpToPage(bytesize(size));
+			array = cast(T[]) _malloc(growsize)[0..bytesize(size)];
 			_capacity = growsize;
 		}
 		else {
 			size_t growsize = _capacity;
-			while(growsize < bytesize) {
-				growsize = cast(size_t)(growsize*growfactor);
-			}
-			array = cast(T[]) _realloc(array.ptr, growsize, _capacity)[0..array.length + bytesize];
+			
+			array = cast(T[]) _realloc(array.ptr, growsize, _capacity)[0..bytesize(array.length) + bytesize(size)];
 			_capacity += growsize;
 		}
 	}
-	T* add(T element = T()) @trusted
+	void reserve(size_t size)
+	{
+		size_t growsize;
+		if(!array.ptr) {
+			growsize = size;
+		}
+		else {
+			growsize = _capacity;
+			while(growsize < bytesize(size)) {
+				growsize = cast(size_t)(growsize*growfactor);
+			}
+		}
+		reserveExact(growsize);
+	}
+	T* add(T element = T())
 	{
 		if(__ctfe) {
 			array ~= element;
@@ -52,7 +60,7 @@ struct List(T, float growfactor = 2) {
 		array[$-1] = element;
 		return &array[$-1];
 	}
-	void clear() @trusted
+	void clear()
 	{
 		if(!array.ptr) {
 			return;

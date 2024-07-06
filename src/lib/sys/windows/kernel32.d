@@ -2,9 +2,9 @@ module lib.sys.windows.kernel32;
 
 mixin template dynamicLoad(string fileName, string moduleName)
 {
+	__gshared bool used = false;
 	void moduleInit() nothrow @trusted
 	{
-		static bool used = false;
 		if(used) return;
 		used = true;
 		void* libPtr = LoadLibraryA(fileName.ptr);
@@ -19,7 +19,7 @@ mixin template dynamicLoad(string fileName, string moduleName)
 	}
 }
 
-extern(Windows) nothrow @safe:
+extern(Windows) nothrow @safe __gshared:
 void* GetModuleHandleA(const char* moduleName = null);
 void* LoadLibraryA(const char* libFileName);
 alias winFuncter = extern(Windows) long function() nothrow;
@@ -62,3 +62,4 @@ struct OVERLAPPED {
 void* GetStdHandle(uint stdHndlNum);
 bool WriteConsoleA(void* consoleOutput, const char* msg, uint length, uint* written, void* reserved);
 bool WriteConsoleW(void* consoleOutput, const wchar* msg, uint length, uint* written, void* reserved);
+bool TlsSetValue(uint tlsIndex, void* tlsVal = null);

@@ -47,7 +47,7 @@ string toString(T)(T arg, char[] buffer)
 	return cast(string)buffer;
 }
 
-string parseCStr(char* cstr)
+string parseCStr(const char* cstr)
 {
 	uint i;
 	while(cstr[i] != '\0') {

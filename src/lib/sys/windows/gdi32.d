@@ -3,7 +3,7 @@ import lib.sys.windows.kernel32;
 
 mixin dynamicLoad!("gdi32.dll", __MODULE__);
 
-extern(Windows) @safe nothrow:
+extern(Windows) @safe nothrow __gshared:
 
 bool function(void* objectHndl) DeleteObject;
 void* function(const void* hndl) CreateCompatibleDC;

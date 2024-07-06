@@ -3,5 +3,5 @@ import lib.sys.windows.kernel32;
 
 mixin dynamicLoad!("advapi32.dll", __MODULE__);
 
-extern(Windows) @safe nothrow:
+extern(Windows) @safe nothrow __gshared:
 bool function(char* stringBuffer, int* sizeBuffer) GetUserNameA;

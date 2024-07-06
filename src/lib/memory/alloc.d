@@ -95,7 +95,7 @@ T[] alloca(T)(size_t size)
 	T* ptr = cast(T*) _alloca(size * T.sizeof);
 	return ptr[0..size];
 	}
-	else static assert(0, "Sorry bud, you'll need LDC2 to use alloca()");
+	else static assert(0, "You need LDC2 to use alloca()");
 }
 
 version(Windows) extern(Windows) {

@@ -11,6 +11,16 @@ string toString(T)(T arg, char[] buffer)
 	else static if(is(immutable(T) : string) || is(immutable(T) : wstring)) {
 		buffer = cast(char[])arg;
 	}
+	else static if(is(T == enum)) {
+		enum string[] _enumTable = [__traits(allMembers, T)];
+		string[_enumTable.length] enumTable = _enumTable;
+		if(arg < enumTable.length) {
+			return enumTable[arg];
+		}
+		else {
+			return toString(cast(long)arg, buffer);
+		}
+	}
 	else static if(is(T : long)) {
 		// max size: ~31
 		bool start;
@@ -28,16 +38,6 @@ string toString(T)(T arg, char[] buffer)
 		foreach_reverse(i; start .. len+start) {
 			buffer[i] = arg%10 + '0';
 			arg /= 10;
-		}
-	}
-	else static if(is(T == enum)) {
-		enum string[] _enumTable = [__traits(allMembers, T)];
-		string[_enumTable.length] enumTable = _enumTable;
-		if(arg < enumTable.length) {
-			return enumTable[arg];
-		}
-		else {
-			return toString(cast(long)arg, buffer);
 		}
 	}
 	else {

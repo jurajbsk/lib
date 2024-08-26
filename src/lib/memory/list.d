@@ -60,6 +60,10 @@ struct List(T, float growfactor = 2) {
 		array[$-1] = element;
 		return &array[$-1];
 	}
+	void pop(size_t num = 1)
+	{
+		array = array[0..$-num];
+	}
 	void clear()
 	{
 		if(!array.ptr) {

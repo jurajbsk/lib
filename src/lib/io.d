@@ -67,14 +67,13 @@ void fwrite(S...)(File* outFile, S args)
 				else writeOut("null");
 			}
 		}
-		else static if(is(immutable(argType) : wstring)) {
-			writeW(stdout, arg);
-		}
-		else static if(is(immutable(argType) : immutable(char)) && !is(argType == bool)) {
+		// else static if(is(immutable(argType) : wstring)) {
+		// 	writeW(stdout, arg);
+		// }
+		else static if(is(immutable(argType) : immutable(char)) && !is(argType == bool) && !is(argType == enum)) {
 			writeOut(cast(string)(&arg)[0..1]);
 		}
-		else static if(is(argType == struct) ||
-		               is(argType == union))
+		else static if(is(argType == struct))
 		{
 			string header = __traits(identifier, argType) ~ "(";
 			writeOut(header);

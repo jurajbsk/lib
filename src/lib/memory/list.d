@@ -3,80 +3,78 @@ import lib.memory.alloc;
 
 /// Dynamically-sized list, capacity aligned with pages
 struct List(T, float growfactor = 2) {
-	T[] array;
-	alias array this;
+	T[] _array;
+	alias _array this;
 	size_t _capacity;
 
 	size_t capacity() => _capacity/T.sizeof;
-	size_t bytesize(size_t size) => size * T.sizeof;
+	size_t byteSize(size_t size) => size * T.sizeof;
 
-	void reserveExact(size_t size)
+	void reserveExact(size_t byteSize)
 	{
-		if(__ctfe) {
-			array.length += size;
-			_capacity += bytesize(size);
-			return;
-		}
-
-		if(!array.ptr) {
-			size_t growsize = roundUpToPage(bytesize(size));
-			array = cast(T[]) _malloc(growsize)[0..bytesize(size)];
-			_capacity = growsize;
+		if(!_array.ptr) {
+			size_t growSize = roundUpToPage(byteSize);
+			_array = (cast(T*)_malloc(growSize))[0.._array.length];
+			_capacity = growSize;
 		}
 		else {
-			size_t growsize = _capacity;
-			
-			array = cast(T[]) _realloc(array.ptr, growsize, _capacity)[0..bytesize(array.length) + bytesize(size)];
-			_capacity += growsize;
+			size_t growSize = _capacity;
+			_array = (cast(T*)_realloc(_array.ptr, growSize, _capacity))[0.._array.length];
+			_capacity += growSize;
 		}
 	}
 	void reserve(size_t size)
 	{
-		size_t growsize;
-		if(!array.ptr) {
-			growsize = size;
+		size_t growSize;
+		if(!_array.ptr) {
+			growSize = size;
 		}
 		else {
-			growsize = _capacity;
-			while(growsize < bytesize(size)) {
-				growsize = cast(size_t)(growsize*growfactor);
+			growSize = _capacity;
+			while(growSize < byteSize(size)) {
+				growSize = cast(size_t)(growSize*growfactor);
 			}
 		}
-		reserveExact(growsize);
+		reserveExact(growSize);
 	}
-	T* add(T element = T())
+	void add(T element = T())
 	{
-		if(__ctfe) {
-			array ~= element;
-			_capacity += T.sizeof;
-			return &array[$-1];
-		}
-
-		if((array.length+1)*T.sizeof > _capacity) {
+		if(byteSize(_array.length+1) > _capacity) {
 			reserve(1);
 		}
-		else array = array.ptr[0..array.length+1];
-
-		array[$-1] = element;
-		return &array[$-1];
+		_array = _array.ptr[0.._array.length+1];
+		_array[$-1] = element;
 	}
-	void pop(size_t num = 1)
+	void pop(size_t num)
 	{
-		array = array[0..$-num];
+		_array = _array[0..$-num];
+	}
+	T pop()
+	{
+		T res = _array[$-1];
+		pop(1);
+		return res;
 	}
 	void clear()
 	{
-		if(!array.ptr) {
+		if(!_array.ptr) {
 			return;
 		}
 		_capacity = 0;
-		if(__ctfe) {
-			array.length = 0;
-			return;
-		}
 
-		free(array.ptr);
-		array = null;
+		free(_array.ptr);
+		_array = null;
+	}
+
+	this(T[] arr)
+	{
+		_array = arr[0..0];
+		_capacity = byteSize(arr.length);
+	}
+	List!T opAssign(T[] arr)
+	{
+		this = List!T(arr);
+		return this;
 	}
 }
 

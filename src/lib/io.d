@@ -55,7 +55,8 @@ void fwrite(S...)(File* outFile, S args)
 
 	static foreach(arg; args) {{
 		alias argType = typeof(arg);
-		static if(is(typeof(arg) == U*, U)) {
+		static if(is(typeof(arg) == U*, U))
+		{
 			static if(is(U == void)) {
 				fwrite(outFile, cast(size_t)arg);
 			}
@@ -70,10 +71,11 @@ void fwrite(S...)(File* outFile, S args)
 		// else static if(is(immutable(argType) : wstring)) {
 		// 	writeW(stdout, arg);
 		// }
-		else static if(is(immutable(argType) : immutable(char)) && !is(argType == bool) && !is(argType == enum)) {
+		else static if(is(immutable(argType) : immutable(char)) && !is(argType == bool) && !is(argType == enum))
+		{
 			writeOut(cast(string)(&arg)[0..1]);
 		}
-		else static if(is(argType == struct))
+		else static if(is(argType == struct) || is(argType == union))
 		{
 			string header = __traits(identifier, argType) ~ "(";
 			writeOut(header);
@@ -97,6 +99,21 @@ void fwrite(S...)(File* outFile, S args)
 				}
 			}}
 			writeOut(")");
+		}
+		else static if(is(argType : void[]))
+		{
+			if(arg.ptr == null) {
+				writeOut("null");
+				return;
+			}
+			writeOut("[");
+			foreach(i, element; arg) {
+				if(i > 0) {
+					writeOut(", ");
+				}
+				fwrite(outFile, element);
+			}
+			writeOut("]");
 		}
 		else {
 			char[64] buf;

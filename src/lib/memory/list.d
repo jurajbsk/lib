@@ -45,6 +45,16 @@ struct List(T, float growfactor = 2) {
 		_array = _array.ptr[0.._array.length+1];
 		_array[$-1] = element;
 	}
+	void add(T[] elements)
+	{
+		if(byteSize(_array.length+elements.length) > _capacity) {
+			reserve(elements.length);
+		}
+		_array = _array.ptr[0.._array.length+elements.length];
+		foreach(i, el; elements) {
+			_array[$-(elements.length-i)] = el;
+		}
+	}
 	void pop(size_t num)
 	{
 		_array = _array[0..$-num];

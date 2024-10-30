@@ -104,16 +104,17 @@ void fwrite(S...)(File* outFile, S args)
 		{
 			if(arg.ptr == null) {
 				writeOut("null");
-				return;
 			}
-			writeOut("[");
-			foreach(i, element; arg) {
-				if(i > 0) {
-					writeOut(", ");
+			else {
+				writeOut("[");
+				foreach(i, element; arg) {
+					if(i > 0) {
+						writeOut(", ");
+					}
+					fwrite(outFile, element);
 				}
-				fwrite(outFile, element);
+				writeOut("]");
 			}
-			writeOut("]");
 		}
 		else {
 			char[64] buf;

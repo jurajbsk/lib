@@ -1,7 +1,7 @@
 module lib.string;
 import lib.err;
 
-// Needs to be a constant-sized array, size changes based on T
+// Size changes based on T
 string toString(T)(T arg, char[] buffer)
 {
 	static if(is(T == bool)) {
@@ -55,3 +55,17 @@ string parseCStr(const char* cstr)
 	}
 	return cast(string)cstr[0..i];
 }
+
+T strToNum(T : ulong = ulong)(string str)
+{
+	T res = 0;
+	foreach(char c; str) {
+		if(c > '9' || c < '0') {
+			return 0;
+		}
+		res *= 10;
+		res += c - '0';
+	}
+	return res;
+}
+static assert(strToNum("999") == 999);

@@ -3,6 +3,7 @@ version(LDC) import ldc.attributes;
 else {
 	struct allocSize {long sizeArgIdx; long numArgIdx;}
 }
+version(Posix) import lib.sys.linux;
 
 uint getPageSize()
 {
@@ -37,6 +38,10 @@ uint getAllocGranularity()
 {
 	version(Windows) {
 		void* ptr = VirtualAlloc(startPtr, size, RESERVE|COMMIT, READWRITE);
+	}
+	else version(Posix) {
+		// mmap
+		void* ptr = syscall(9, null, size, cast(int)1|2, cast(int)0);
 	}
 	return ptr;
 }
@@ -129,12 +134,6 @@ version(Windows) extern(Windows) {
 		uint type;
 	}
 	size_t VirtualQuery(void* basePtr, out MEMORY_BASIC_INFO infoBuff, size_t buffSize=MEMORY_BASIC_INFO.sizeof);
-}
-else version(Posix) extern(C)
-{
-	// TODO: linux branch
-	//void* mmap64(void*, size_t, int, int, int, long);
-	//void* mmap(void*, size_t, int, int, int, long);
 }
 
 unittest

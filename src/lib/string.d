@@ -1,7 +1,6 @@
 module lib.string;
 import lib.err;
 
-// Size changes based on T
 string toString(T)(T arg, char[] buffer)
 {
 	static if(is(T == bool)) {
@@ -56,16 +55,35 @@ string parseCStr(const char* cstr)
 	return cast(string)cstr[0..i];
 }
 
-T strToNum(T : ulong = ulong)(string str)
+struct StrNum {
+	ulong num;
+	alias num this;
+	ubyte sign;
+	enum : ubyte {
+		Positive = 0,
+		Negative = 1,
+		Overflow = 2,
+		Error = cast(ubyte)-1
+	}
+}
+StrNum strToNum(string str)
 {
-	T res = 0;
+	StrNum res = StrNum(0, StrNum.Positive);
+	if(str[0] == '-') {
+		res.sign = StrNum.Negative;
+		str = str[1..$];
+	}
 	foreach(char c; str) {
 		if(c > '9' || c < '0') {
-			return 0;
+			return StrNum(0, StrNum.Error);
 		}
-		res *= 10;
-		res += c - '0';
+		res.num *= 10;
+		ulong add = res.num + c - '0';
+		if(res.num + add < res.num) {
+			return StrNum(0, StrNum.Overflow);
+		}
+		res.num = add;
 	}
 	return res;
 }
-static assert(strToNum("999") == 999);
+static assert(strToNum("999") == StrNum(999, 0));
